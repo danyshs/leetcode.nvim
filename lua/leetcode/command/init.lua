@@ -3,7 +3,6 @@ local arguments = require("leetcode.command.arguments")
 local config = require("leetcode.config")
 local event = require("nui.utils.autocmd").event
 local api = vim.api
-
 local t = require("leetcode.translator")
 
 ---@class lc.Commands
@@ -17,7 +16,6 @@ end
 
 function cmd.cache_update()
     require("leetcode.utils").auth_guard()
-
     require("leetcode.cache").update()
 end
 
@@ -203,7 +201,7 @@ function cmd.set_menu_page(page)
     _Lc_state.menu:set_page(page)
 end
 
-function cmd.start_user_session() --
+function cmd.start_user_session()
     cmd.set_menu_page("menu")
     config.stats.update()
 end
@@ -255,7 +253,6 @@ function cmd.info()
 end
 
 function cmd.hints()
-    -- cmd.deprecate("Leet hints", "Leet info")
     cmd.info()
 end
 
@@ -307,7 +304,6 @@ function cmd.open()
             elseif os_name == "Darwin" then
                 command = string.format("open '%s'", q.cache.link)
             else
-                -- Fallback to Windows if uname is not available or does not match Linux/Darwin.
                 command = string.format("start \"\" \"%s\"", q.cache.link)
             end
 
@@ -336,7 +332,7 @@ function cmd.last_submit()
     end
 
     local question_api = require("leetcode.api.question")
-    question_api.latest_submission(q.q.id, q.lang, function(res, err) --
+    question_api.latest_submission(q.q.id, q.lang, function(res, err)
         if err then
             if err.status == 404 then
                 log.error("You haven't submitted any code!")
@@ -348,7 +344,6 @@ function cmd.last_submit()
         end
 
         if type(res) == "table" and res.code then
-            ---@type string
             local lines = res.code
             q:editor_section_replace(lines, "code")
         else
@@ -375,10 +370,7 @@ function cmd.restore()
     q.description:show()
     local winid, bufnr = q.description.winid, q.description.bufnr
 
-    if
-        (winid and api.nvim_win_is_valid(winid)) --
-        and (bufnr and api.nvim_buf_is_valid(bufnr))
-    then
+    if (winid and api.nvim_win_is_valid(winid)) and (bufnr and api.nvim_buf_is_valid(bufnr)) then
         ui.win_set_buf(q.winid, q.bufnr)
     end
 end
@@ -472,7 +464,6 @@ end
 
 function cmd.update_sessions()
     require("leetcode.utils").auth_guard()
-
     config.stats.update_sessions()
 end
 
@@ -519,7 +510,6 @@ end
 
 ---@param _ string
 ---@param line string
----
 ---@return string[]
 function cmd.complete(_, line)
     local args, options = cmd.parse(line:gsub("Leet%s", ""))
@@ -528,8 +518,7 @@ end
 
 ---@param args string[]
 ---@param options string[]
----@param cmds table<string,any>
----
+---@param cmds table<string, any>
 ---@return string[]
 function cmd.rec_complete(args, options, cmds)
     if not cmds or vim.tbl_isempty(args) then
@@ -567,8 +556,8 @@ end
 
 function cmd.exec(args)
     local cmds = cmd.commands
-
     local options = vim.empty_dict()
+
     for s in vim.gsplit(args.args:lower(), "%s+", { trimempty = true }) do
         local opt = vim.split(s, "=")
 
@@ -598,6 +587,325 @@ function cmd.setup()
     })
 end
 
+vim.api.nvim_create_user_command("LeetQ", function(opts)
+    local auth_retry_started = false
+
+    local function is_signed_in()
+        local ok, cookie_mod = pcall(require, "leetcode.cache.cookie")
+        if not ok or not cookie_mod then
+            return false
+        end
+
+        local get_ok, cookie_data = pcall(cookie_mod.get)
+        return get_ok and cookie_data ~= nil and cookie_data ~= false
+    end
+
+    local function notify_msg(msg, level, replace)
+        local notify_ok, notify = pcall(require, "notify")
+        if not notify_ok then
+            vim.notify(msg, level or vim.log.levels.INFO, { title = "LeetQ" })
+            return nil
+        end
+
+        local opts = {
+            title = "LeetQ",
+            timeout = level == vim.log.levels.ERROR and 4000 or 1200,
+        }
+
+        if replace ~= nil then
+            opts.replace = replace
+        end
+
+        local ok, notif = pcall(notify, msg, level or vim.log.levels.INFO, opts)
+        if ok then
+            return notif
+        end
+
+        opts.replace = nil
+        local fallback_ok, fallback_notif = pcall(notify, msg, level or vim.log.levels.INFO, opts)
+        if fallback_ok then
+            return fallback_notif
+        end
+
+        vim.notify(msg, level or vim.log.levels.INFO, { title = "LeetQ" })
+        return nil
+    end
+
+    local function mount_and_fix(problem_data)
+        if not problem_data then
+            log.error("LeetQ: No problem data to mount")
+            return
+        end
+
+        local QuestionUI = require("leetcode-ui.question")
+        local q_instance = QuestionUI(problem_data)
+        q_instance:mount()
+
+        vim.schedule(function()
+            if q_instance.winid and vim.api.nvim_win_is_valid(q_instance.winid) then
+                vim.api.nvim_set_current_win(q_instance.winid)
+            end
+            vim.cmd("stopinsert")
+        end)
+    end
+
+    local function ensure_started()
+        local ok, leetcode = pcall(require, "leetcode")
+        if ok and leetcode and leetcode.start then
+            pcall(leetcode.start, false)
+        end
+    end
+
+    local function run_after_auth_wait()
+        local notif_ref = notify_msg("Checking LeetCode session...")
+        local waited_ms = 0
+        local interval_ms = 200
+        local max_wait_ms = 7000
+
+        local timer = vim.loop.new_timer()
+        if not timer then
+            vim.cmd("Leet")
+            return
+        end
+
+        timer:start(
+            0,
+            interval_ms,
+            vim.schedule_wrap(function()
+                waited_ms = waited_ms + interval_ms
+
+                local utils_ok, utils = pcall(require, "leetcode.utils")
+                local auth_ready = false
+
+                if utils_ok and utils and utils.auth_guard then
+                    auth_ready = pcall(utils.auth_guard)
+                end
+
+                if auth_ready then
+                    if not timer:is_closing() then
+                        timer:stop()
+                        timer:close()
+                    end
+
+                    notify_msg("Signed in. Loading question...", vim.log.levels.INFO, notif_ref)
+                    vim.defer_fn(function()
+                        local ok_run, err = pcall(function()
+                            local input_str = table.concat(opts.fargs, " "):lower()
+                            local problems_module = require("leetcode.cache.problemlist")
+                            local Picker = require("leetcode.picker")
+
+                            local ok, result = pcall(problems_module.get)
+                            if not ok or type(result) ~= "table" then
+                                log.error("LeetQ: Failed to get problem list")
+                                vim.notify(
+                                    "LeetQ: Could not retrieve problem list.",
+                                    vim.log.levels.ERROR,
+                                    {
+                                        title = "LeetQ",
+                                    }
+                                )
+                                return
+                            end
+
+                            local all_problems_list = result
+
+                            if input_str == "" then
+                                Picker.question(all_problems_list)
+                                return
+                            end
+
+                            local matches = {}
+                            local exact_match_problem = nil
+
+                            for _, p_data in ipairs(all_problems_list) do
+                                if p_data and p_data.title then
+                                    local title_lower = p_data.title:lower()
+
+                                    if title_lower == input_str then
+                                        exact_match_problem = p_data
+                                        break
+                                    elseif title_lower:find(input_str, 1, true) then
+                                        table.insert(matches, p_data)
+                                    end
+                                end
+                            end
+
+                            if exact_match_problem then
+                                mount_and_fix(exact_match_problem)
+                                return
+                            end
+
+                            if #matches == 0 then
+                                vim.notify(
+                                    "LeetQ: No matching questions found for '" .. input_str .. "'.",
+                                    vim.log.levels.WARN,
+                                    { title = "LeetQ" }
+                                )
+                                return
+                            end
+
+                            if #matches == 1 then
+                                mount_and_fix(matches[1])
+                                return
+                            end
+
+                            Picker.question(matches)
+                        end)
+
+                        if not ok_run then
+                            log.error("LeetQ: " .. tostring(err))
+                        end
+                    end, 100)
+
+                    return
+                end
+
+                if waited_ms == interval_ms then
+                    vim.cmd("Leet")
+                    notify_msg("Starting LeetCode sign-in...", vim.log.levels.INFO, notif_ref)
+                end
+
+                if waited_ms >= max_wait_ms then
+                    if not timer:is_closing() then
+                        timer:stop()
+                        timer:close()
+                    end
+
+                    notify_msg(
+                        "LeetCode sign-in timed out. Run ':Leet' or ':Leet cookie update' and try again.",
+                        vim.log.levels.ERROR,
+                        notif_ref
+                    )
+                end
+            end)
+        )
+    end
+
+    local function run_question_logic()
+        local utils_ok, utils = pcall(require, "leetcode.utils")
+        local auth_ok = utils_ok and utils and utils.auth_guard and pcall(utils.auth_guard)
+
+        if not auth_ok then
+            if not auth_retry_started then
+                auth_retry_started = true
+                run_after_auth_wait()
+            end
+            return
+        end
+
+        local input_str = table.concat(opts.fargs, " "):lower()
+        local problems_module = require("leetcode.cache.problemlist")
+        local Picker = require("leetcode.picker")
+
+        local ok, result = pcall(problems_module.get)
+        if not ok or type(result) ~= "table" then
+            log.error("LeetQ: Failed to get problem list")
+            vim.notify("LeetQ: Could not retrieve problem list.", vim.log.levels.ERROR, {
+                title = "LeetQ",
+            })
+            return
+        end
+
+        local all_problems_list = result
+
+        if input_str == "" then
+            Picker.question(all_problems_list)
+            return
+        end
+
+        local matches = {}
+        local exact_match_problem = nil
+
+        for _, p_data in ipairs(all_problems_list) do
+            if p_data and p_data.title then
+                local title_lower = p_data.title:lower()
+
+                if title_lower == input_str then
+                    exact_match_problem = p_data
+                    break
+                elseif title_lower:find(input_str, 1, true) then
+                    table.insert(matches, p_data)
+                end
+            end
+        end
+
+        if exact_match_problem then
+            mount_and_fix(exact_match_problem)
+            return
+        end
+
+        if #matches == 0 then
+            vim.notify(
+                "LeetQ: No matching questions found for '" .. input_str .. "'.",
+                vim.log.levels.WARN,
+                { title = "LeetQ" }
+            )
+            return
+        end
+
+        if #matches == 1 then
+            mount_and_fix(matches[1])
+            return
+        end
+
+        Picker.question(matches)
+    end
+
+    ensure_started()
+
+    if is_signed_in() then
+        run_question_logic()
+    else
+        run_after_auth_wait()
+    end
+end, {
+    nargs = "*",
+    desc = "LeetQ: Fuzzy open LeetCode question by title or list all if no args.",
+    complete = function(arglead)
+        local cookie_ok, cookie_mod = pcall(require, "leetcode.cache.cookie")
+        if not cookie_ok or not cookie_mod then
+            return {}
+        end
+
+        local signed_in_ok, cookie_data = pcall(cookie_mod.get)
+        if not signed_in_ok or not cookie_data then
+            return { "-- Sign in to LeetCode first --" }
+        end
+
+        local problems_ok, problems_module = pcall(require, "leetcode.cache.problemlist")
+        if not problems_ok or not problems_module then
+            return { "-- Error loading problems module --" }
+        end
+
+        local ok, all_problems_list = pcall(problems_module.get)
+        if not ok or type(all_problems_list) ~= "table" then
+            return { "-- Error retrieving problem list --" }
+        end
+
+        local titles = {}
+        for _, p_data in ipairs(all_problems_list) do
+            if p_data and p_data.title then
+                table.insert(titles, p_data.title)
+            end
+        end
+
+        if arglead == nil or arglead == "" then
+            return titles
+        end
+
+        local filtered_titles = {}
+        local lead_lower = arglead:lower()
+
+        for _, title_str in ipairs(titles) do
+            if title_str:lower():find(lead_lower, 1, true) then
+                table.insert(filtered_titles, title_str)
+            end
+        end
+
+        return filtered_titles
+    end,
+})
+
 cmd.commands = {
     cmd.menu,
 
@@ -619,17 +927,6 @@ cmd.commands = {
     restore = { cmd.restore },
     inject = { cmd.inject },
     fold = { cmd.fold },
-    -- session = {
-    --     change = {
-    --         cmd.change_session,
-    --         _args = arguments.session_change,
-    --     },
-    --     create = {
-    --         cmd.create_session,
-    --         _args = arguments.session_create,
-    --     },
-    --     update = { cmd.update_sessions },
-    -- },
     list = {
         cmd.problems,
         _args = arguments.list,
