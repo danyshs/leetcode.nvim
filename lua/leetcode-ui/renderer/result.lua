@@ -128,7 +128,7 @@ function ResultLayout:handle_submission_error(item) -- status code = 11
     local header = Header(item)
     self:insert(header)
 
-    self:insert(Case({ ---@diagnostic disable-line
+    self:insert(Case({
         input = vim.split(item.input, "\n"),
         raw_input = item.last_testcase,
         output = item.code_output,

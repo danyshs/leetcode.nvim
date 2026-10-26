@@ -1,5 +1,3 @@
----@diagnostic disable: invisible, duplicate-set-field
-
 local leetcode = require("leetcode")
 local config = require("leetcode.config")
 
@@ -21,6 +19,10 @@ leetcode.start = function(on_vimenter)
     theme.setup()
 
     if not on_vimenter then
+        -- standalone is non-nil once past the `skip` guard above; make the
+        -- invariant explicit so an illegal nil fails loudly instead of silently.
+        assert(standalone ~= nil, "should_skip must return standalone when not skipping")
+
         if not standalone then
             prev_cwd = vim.fn.getcwd()
             vim.cmd.tabe()
@@ -28,7 +30,7 @@ leetcode.start = function(on_vimenter)
             vim.cmd.enew()
         end
 
-        is_standalone = standalone ---@diagnostic disable-line: cast-local-type
+        is_standalone = standalone
     end
 
     vim.api.nvim_set_current_dir(config.storage.home:absolute())

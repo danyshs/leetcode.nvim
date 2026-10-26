@@ -32,8 +32,9 @@ local config = {
     imports = require("leetcode.config.imports"),
     hooks = require("leetcode.config.hooks"),
 
+    -- auth starts empty; populated by Auth.user() after sign-in, reset to {} on logout
     ---@type lc.UserStatus
-    auth = {}, ---@diagnostic disable-line
+    auth = {}, ---@diagnostic disable-line: missing-fields
 }
 
 ---Merge configurations into default configurations and set it as user configurations.
@@ -56,13 +57,13 @@ function config.setup()
 
     config.user.storage = vim.tbl_map(vim.fn.expand, config.user.storage)
 
-    config.debug = config.user.debug or false ---@diagnostic disable-line
+    config.debug = config.user.debug or false
     config.lang = config.user.lang
 
-    config.storage.home = P:new(config.user.storage.home) ---@diagnostic disable-line
+    config.storage.home = P:new(config.user.storage.home)
     config.storage.home:mkdir()
 
-    config.storage.cache = P:new(config.user.storage.cache) ---@diagnostic disable-line
+    config.storage.cache = P:new(config.user.storage.cache)
     config.storage.cache:mkdir()
 
     for _, plug_load_fn in ipairs(lazy_plugs) do

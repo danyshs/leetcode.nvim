@@ -68,6 +68,9 @@ local M = {
     ---@type boolean
     logging = true,
 
+    ---@type boolean
+    debug = false,
+
     injector = {}, ---@type table<lc.lang, lc.inject>
 
     cache = {

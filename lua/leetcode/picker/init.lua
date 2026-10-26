@@ -12,7 +12,7 @@ local providers = {
     ["snacks-picker"] = {
         name = "snacks",
         is_available = function()
-            return pcall(function() ---@diagnostic disable-next-line: undefined-field
+            return pcall(function()
                 assert(Snacks.config["picker"].enabled)
             end)
         end,

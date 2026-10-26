@@ -7,7 +7,7 @@ local utils = require("leetcode.api.utils")
 local cn_utils = require("leetcode-plugins.cn.utils")
 
 ---@param cb fun(res: lc.Stats.Res|nil, err: lc.err)
-statistics.solved = function(cb) ---@diagnostic disable-line
+statistics.solved = function(cb)
     local variables = {
         username = config.auth.name,
     }
@@ -51,7 +51,7 @@ statistics.session_progress = function(cb)
     })
 end
 
-statistics.calendar = function(cb) ---@diagnostic disable-line
+statistics.calendar = function(cb)
     local variables = {
         username = config.auth.name,
     }
@@ -79,7 +79,7 @@ statistics.calendar = function(cb) ---@diagnostic disable-line
 end
 
 ---@param cb fun(res: lc.Languages.Res|nil, err: lc.err)
-statistics.languages = function(cb) ---@diagnostic disable-line
+statistics.languages = function(cb)
     local variables = {
         username = config.auth.name,
     }

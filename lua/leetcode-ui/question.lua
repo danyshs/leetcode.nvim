@@ -20,6 +20,7 @@ local log = require("leetcode.logger")
 ---@field lang string
 ---@field cache lc.cache.Question
 ---@field reset boolean
+---@overload fun(problem: lc.cache.Question): lc.ui.Question
 local Question = Object("LeetQuestion")
 
 ---@param raw? boolean
@@ -110,7 +111,9 @@ function Question:editor_fold_imports(strict)
     local range = self:editor_section_range("imports", true)
     if range.complete or range.end_i then
         vim.api.nvim_buf_call(self.bufnr, function()
-            pcall(vim.cmd, ("%d,%dfold"):format(range.start_i or 1, range.end_i)) ---@diagnostic disable-line: param-type-mismatch
+            pcall(function()
+                vim.cmd(("%d,%dfold"):format(range.start_i or 1, range.end_i))
+            end)
         end)
     elseif strict then
         range.log_not_found()
@@ -456,7 +459,6 @@ function Question:init(problem)
     self.lang = config.lang
 end
 
----@type fun(question: lc.cache.Question): lc.ui.Question
-local LeetQuestion = Question ---@diagnostic disable-line: assign-type-mismatch
+local LeetQuestion = Question
 
 return LeetQuestion

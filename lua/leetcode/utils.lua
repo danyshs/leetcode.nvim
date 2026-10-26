@@ -8,7 +8,9 @@ function utils.deprecate_usr_cmd(name, new)
     vim.api.nvim_create_user_command(name, function()
         local cmd = require("leetcode.command")
         cmd.deprecate(name, new)
-        pcall(vim.cmd, new) ---@diagnostic disable-line
+        pcall(function()
+            vim.cmd(new)
+        end)
     end, {})
 end
 
