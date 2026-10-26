@@ -8,6 +8,43 @@ local t = require("leetcode.translator")
 ---@class lc.Commands
 local cmd = {}
 
+---Classify a lowercased title query against a problem list. Pure and
+---session-free so it is unit-testable: no network, no mount, no picker.
+---Returns one of: "empty" (no query), "exact" (+problem), "single" (+problem),
+---"multi" (+matches list), "none" (no match). Callers decide what to do with
+---each outcome (mount vs picker vs warn).
+---@param problems table[] list of problems, each with a `.title`
+---@param query string lowercased title query ("" means list-all)
+---@return string kind, table? payload
+function cmd.match_question(problems, query)
+    assert(type(problems) == "table", "match_question: problems must be a table")
+    assert(type(query) == "string", "match_question: query must be a string")
+
+    if query == "" then
+        return "empty", problems
+    end
+
+    local matches = {}
+    for _, p_data in ipairs(problems) do
+        if p_data and p_data.title then
+            local title_lower = p_data.title:lower()
+            if title_lower == query then
+                return "exact", p_data
+            elseif title_lower:find(query, 1, true) then
+                table.insert(matches, p_data)
+            end
+        end
+    end
+
+    if #matches == 0 then
+        return "none", nil
+    elseif #matches == 1 then
+        return "single", matches[1]
+    else
+        return "multi", matches
+    end
+end
+
 ---@param old_name string
 ---@param new_name string
 function cmd.deprecate(old_name, new_name)
@@ -590,14 +627,22 @@ end
 vim.api.nvim_create_user_command("LeetQ", function(opts)
     local auth_retry_started = false
 
+    -- is_signed_in distinguishes the three states the old code collapsed into a
+    -- bare `false`: a real module-load failure (surfaced, not hidden behind
+    -- "sign in first"), signed-out, and signed-in. Returns ok, signed_in.
     local function is_signed_in()
         local ok, cookie_mod = pcall(require, "leetcode.cache.cookie")
         if not ok or not cookie_mod then
-            return false
+            log.error("LeetQ: failed to load cookie module: " .. tostring(cookie_mod))
+            return false, false
         end
 
         local get_ok, cookie_data = pcall(cookie_mod.get)
-        return get_ok and cookie_data ~= nil and cookie_data ~= false
+        if not get_ok then
+            log.error("LeetQ: failed to read cookie: " .. tostring(cookie_data))
+            return false, false
+        end
+        return true, cookie_data ~= nil and cookie_data ~= false
     end
 
     local function notify_msg(msg, level, replace)
@@ -651,8 +696,43 @@ vim.api.nvim_create_user_command("LeetQ", function(opts)
 
     local function ensure_started()
         local ok, leetcode = pcall(require, "leetcode")
-        if ok and leetcode and leetcode.start then
-            pcall(leetcode.start, false)
+        if not ok or not leetcode or not leetcode.start then
+            log.error("LeetQ: failed to load leetcode: " .. tostring(leetcode))
+            return
+        end
+        local start_ok, err = pcall(leetcode.start, false)
+        if not start_ok then
+            log.error("LeetQ: leetcode.start failed: " .. tostring(err))
+        end
+    end
+
+    -- open_named_question is the single matcher both auth paths (the synchronous
+    -- `run_question_logic` and the post-auth-wait deferred call) share, so the
+    -- match/mount behavior lives in exactly one place. Empty input opens the
+    -- picker; an exact title or a lone partial auto-mounts; multiple partials
+    -- fall back to the picker. Any problem-list load failure is surfaced, not
+    -- swallowed. Returns nothing; all outcomes are user-visible.
+    local function open_named_question(input_str)
+        assert(type(input_str) == "string", "open_named_question: input_str must be a string")
+
+        local problems_module = require("leetcode.cache.problemlist")
+        local Picker = require("leetcode.picker")
+
+        local ok, result = pcall(problems_module.get)
+        if not ok or type(result) ~= "table" then
+            log.error("LeetQ: failed to get problem list: " .. tostring(result))
+            return
+        end
+
+        local kind, payload = cmd.match_question(result, input_str)
+        if kind == "empty" then
+            Picker.question(payload)
+        elseif kind == "exact" or kind == "single" then
+            mount_and_fix(payload)
+        elseif kind == "multi" then
+            Picker.question(payload)
+        else -- "none"
+            log.warn(("LeetQ: no matching questions found for '%s'."):format(input_str))
         end
     end
 
@@ -689,69 +769,8 @@ vim.api.nvim_create_user_command("LeetQ", function(opts)
 
                     notify_msg("Signed in. Loading question...", vim.log.levels.INFO, notif_ref)
                     vim.defer_fn(function()
-                        local ok_run, err = pcall(function()
-                            local input_str = table.concat(opts.fargs, " "):lower()
-                            local problems_module = require("leetcode.cache.problemlist")
-                            local Picker = require("leetcode.picker")
-
-                            local ok, result = pcall(problems_module.get)
-                            if not ok or type(result) ~= "table" then
-                                log.error("LeetQ: Failed to get problem list")
-                                vim.notify(
-                                    "LeetQ: Could not retrieve problem list.",
-                                    vim.log.levels.ERROR,
-                                    {
-                                        title = "LeetQ",
-                                    }
-                                )
-                                return
-                            end
-
-                            local all_problems_list = result
-
-                            if input_str == "" then
-                                Picker.question(all_problems_list)
-                                return
-                            end
-
-                            local matches = {}
-                            local exact_match_problem = nil
-
-                            for _, p_data in ipairs(all_problems_list) do
-                                if p_data and p_data.title then
-                                    local title_lower = p_data.title:lower()
-
-                                    if title_lower == input_str then
-                                        exact_match_problem = p_data
-                                        break
-                                    elseif title_lower:find(input_str, 1, true) then
-                                        table.insert(matches, p_data)
-                                    end
-                                end
-                            end
-
-                            if exact_match_problem then
-                                mount_and_fix(exact_match_problem)
-                                return
-                            end
-
-                            if #matches == 0 then
-                                vim.notify(
-                                    "LeetQ: No matching questions found for '" .. input_str .. "'.",
-                                    vim.log.levels.WARN,
-                                    { title = "LeetQ" }
-                                )
-                                return
-                            end
-
-                            if #matches == 1 then
-                                mount_and_fix(matches[1])
-                                return
-                            end
-
-                            Picker.question(matches)
-                        end)
-
+                        local input_str = table.concat(opts.fargs, " "):lower()
+                        local ok_run, err = pcall(open_named_question, input_str)
                         if not ok_run then
                             log.error("LeetQ: " .. tostring(err))
                         end
@@ -794,66 +813,17 @@ vim.api.nvim_create_user_command("LeetQ", function(opts)
         end
 
         local input_str = table.concat(opts.fargs, " "):lower()
-        local problems_module = require("leetcode.cache.problemlist")
-        local Picker = require("leetcode.picker")
-
-        local ok, result = pcall(problems_module.get)
-        if not ok or type(result) ~= "table" then
-            log.error("LeetQ: Failed to get problem list")
-            vim.notify("LeetQ: Could not retrieve problem list.", vim.log.levels.ERROR, {
-                title = "LeetQ",
-            })
-            return
-        end
-
-        local all_problems_list = result
-
-        if input_str == "" then
-            Picker.question(all_problems_list)
-            return
-        end
-
-        local matches = {}
-        local exact_match_problem = nil
-
-        for _, p_data in ipairs(all_problems_list) do
-            if p_data and p_data.title then
-                local title_lower = p_data.title:lower()
-
-                if title_lower == input_str then
-                    exact_match_problem = p_data
-                    break
-                elseif title_lower:find(input_str, 1, true) then
-                    table.insert(matches, p_data)
-                end
-            end
-        end
-
-        if exact_match_problem then
-            mount_and_fix(exact_match_problem)
-            return
-        end
-
-        if #matches == 0 then
-            vim.notify(
-                "LeetQ: No matching questions found for '" .. input_str .. "'.",
-                vim.log.levels.WARN,
-                { title = "LeetQ" }
-            )
-            return
-        end
-
-        if #matches == 1 then
-            mount_and_fix(matches[1])
-            return
-        end
-
-        Picker.question(matches)
+        open_named_question(input_str)
     end
 
     ensure_started()
 
-    if is_signed_in() then
+    local ok, signed_in = is_signed_in()
+    if not ok then
+        -- a load/read failure was already surfaced by is_signed_in; still try
+        -- the auth-wait path, which re-checks and reports its own timeout.
+        run_after_auth_wait()
+    elseif signed_in then
         run_question_logic()
     else
         run_after_auth_wait()
