@@ -8,6 +8,7 @@ local log = require("leetcode.logger")
 ---@alias lc.ui.Group.params { items: lc.ui.Lines[], opts: lc.ui.opts }
 
 ---@class lc.ui.Group : lc.ui.Lines
+---@field super lc.ui.Lines
 ---@field _ lc.ui.Group.params | lines.params
 local Group = Lines:extend("LeetGroup")
 
@@ -70,7 +71,7 @@ function Group:draw(layout, opts)
     end
 end
 
----@param item lc.ui.Lines
+---@param item lc.ui.Line
 function Group:insert(item)
     if not vim.tbl_isempty(Group.super.contents(self)) then
         self:endgrp()
@@ -82,6 +83,7 @@ end
 
 function Group:append(content, highlight)
     if type(content) == "table" and O.is_instance(content, Group) then
+        ---@cast content lc.ui.Group
         local items = content:contents()
 
         for _, item in ipairs(items) do
@@ -123,8 +125,6 @@ end
 
 --@param components lc-ui.Component[]
 ---@param opts? lc.ui.opts
----
----@return lc.ui.Group
 function Group:init(items, opts) --
     local options = vim.tbl_deep_extend("force", {}, opts or {})
 
@@ -133,7 +133,7 @@ function Group:init(items, opts) --
     self._.items = items or {}
 end
 
----@type fun(items?: table, opts?: lc.ui.opts): lc.ui.Group
+---@type lc.ui.Group|fun(items?: table, opts?: lc.ui.opts): lc.ui.Group
 local LeetGroup = Group
 
 return LeetGroup

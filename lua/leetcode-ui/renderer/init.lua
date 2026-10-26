@@ -15,11 +15,13 @@ local log = require("leetcode.logger")
 ---@field keymaps table[]
 
 ---@class lc.ui.Renderer : lc.ui.Group
+---@field super lc.ui.Group
 ---@field bufnr integer
 ---@field winid integer
 ---@field _ lc-ui.Layout._ | lc.ui.Group.params
 local Renderer = Group:extend("LeetRenderer")
 
+---@param component { bufnr?: integer, winid?: integer }  # the window it renders into (popup, split, or a Menu itself)
 function Renderer:draw(component)
     self.bufnr = component.bufnr
     self.winid = component.winid
@@ -57,13 +59,13 @@ function Renderer:with_modifiable(fn)
         return
     end
 
-    local modi = vim.api.nvim_buf_get_option(bufnr, "modifiable")
+    local modi = vim.api.nvim_get_option_value("modifiable", { buf = bufnr })
     if not modi then
-        vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+        vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
     end
     fn()
     if not modi then
-        vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+        vim.api.nvim_set_option_value("modifiable", false, { buf = bufnr })
     end
 end
 
@@ -175,7 +177,7 @@ function Renderer:init(components, opts)
     self._.keymaps = {}
 end
 
----@type fun(components?: table[], opts?: lc.ui.opts): lc.ui.Renderer
+---@type lc.ui.Renderer|fun(components?: table[], opts?: lc.ui.opts): lc.ui.Renderer
 local LeetRenderer = Renderer
 
 return LeetRenderer

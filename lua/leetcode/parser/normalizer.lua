@@ -3,7 +3,7 @@ local u = require("leetcode.parser.utils")
 
 local log = require("leetcode.logger")
 
----@class lc.Normalizer
+---@class lc.Normalizer : lc.Object
 local Normalizer = Object("LeetNormalizer")
 
 function Normalizer:cleanup() --
@@ -82,7 +82,7 @@ function Normalizer:init(text) --
     log.debug(self.text:gsub("&lcnl;", "\n"), false)
 end
 
----@type fun(text: string): lc.Normalizer
+---@type lc.Normalizer|fun(text: string): lc.Normalizer
 local LeetNormalizer = Normalizer
 
 ---@param text string

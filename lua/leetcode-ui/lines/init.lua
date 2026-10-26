@@ -7,6 +7,7 @@ local log = require("leetcode.logger")
 ---@alias lines.params { lines: lc.ui.Line[], opts: lc.ui.opts }
 
 ---@class lc.ui.Lines : lc.ui.Line
+---@field super lc.ui.Line
 ---@field _ lines.params
 local Lines = Line:extend("LeetLines")
 
@@ -73,8 +74,11 @@ function Lines:draw(layout, opts)
     end
 end
 
+---@param content string|NuiText|NuiLine
+---@param highlight? string|nui_text_extmark
 function Lines:append(content, highlight)
     if type(content) == "table" and O.is_instance(content, Lines) then
+        ---@cast content lc.ui.Lines
         local lines = content:contents()
 
         for i, line in ipairs(lines) do
@@ -134,7 +138,7 @@ function Lines:init(lines, opts)
     self._.lines = lines or {}
 end
 
----@type fun(lines?: lc.ui.Line[], opts?: lc.ui.opts): lc.ui.Lines
+---@type lc.ui.Lines|fun(lines?: lc.ui.Line[], opts?: lc.ui.opts): lc.ui.Lines
 local LeetLines = Lines
 
 return LeetLines

@@ -202,6 +202,7 @@
 ---| lc.compile_error
 ---| lc.limit_exceeded_error
 ---| lc.internal_error
+---| lc.submission
 
 --------------------------------------------
 --- Code snipppet

@@ -54,7 +54,8 @@ function utils.question_tabp(q)
     end
 end
 
----@return lc.ui.Question
+---@return lc.ui.Question? question
+---@return integer? tabpage
 function utils.curr_question()
     local tabp = vim.api.nvim_get_current_tabpage()
     local tabs = utils.question_tabs()

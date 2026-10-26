@@ -1,6 +1,7 @@
 local Lines = require("leetcode-ui.lines")
 
 ---@class lc.ui.menu.Header : lc.ui.Lines
+---@field super lc.ui.Lines
 local MenuHeader = Lines:extend("LeetMenuHeader")
 
 local ascii = {
@@ -24,7 +25,7 @@ function MenuHeader:init()
     end
 end
 
----@type fun(): lc.ui.menu.Header
+---@type lc.ui.menu.Header|fun(): lc.ui.menu.Header
 local LeetMenuHeader = MenuHeader
 
 return LeetMenuHeader()

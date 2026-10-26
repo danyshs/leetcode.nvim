@@ -8,7 +8,7 @@ local Object = require("nui.object")
 ---@field on_press? function
 ---@field sc? string
 
----@class lc.ui.Opts
+---@class lc.ui.Opts : lc.Object
 ---@field opts lc.ui.opts
 local Opts = Object("LeetOpts")
 
@@ -44,7 +44,7 @@ function Opts:init(opts) --
     }, vim.deepcopy(opts) or {})
 end
 
----@type fun(opts: table): lc.ui.Opts
+---@type lc.ui.Opts|fun(opts: table): lc.ui.Opts
 local LeetOpts = Opts
 
 return LeetOpts

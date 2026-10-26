@@ -2,6 +2,7 @@ local Lines = require("leetcode-ui.lines")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Button : lc.ui.Lines
+---@field super lc.ui.Lines
 local Button = Lines:extend("LeetButton")
 
 ---@alias lc.ui.Button.opts { sc?: string, on_press?: function } | lc.ui.opts
@@ -38,7 +39,7 @@ function Button:init(lines, opts) --
     Button.super.init(self, lines, options)
 end
 
----@type fun(lines?: lc.ui.Line[], opts?: lc.ui.Button.opts): lc.ui.Button
+---@type lc.ui.Button|fun(lines?: lc.ui.Line[], opts?: lc.ui.Button.opts): lc.ui.Button
 local LeetButton = Button
 
 return LeetButton

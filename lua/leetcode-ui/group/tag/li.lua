@@ -7,6 +7,7 @@ local u = require("leetcode-ui.utils")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Tag.li : lc.ui.Tag
+---@field super lc.ui.Tag
 ---@field indent string
 local Li = Tag:extend("LeetTagUl")
 
@@ -28,7 +29,7 @@ function Li:init(text, opts, node, tags)
         r = r - 1
     end
 
-    local parent = self.tags[r]
+    local parent = self.tags[r] --[[@as lc.ui.Tag.List?]]
 
     if parent then
         if parent.order then
@@ -40,7 +41,7 @@ function Li:init(text, opts, node, tags)
     end
 end
 
----@type fun(): lc.ui.Tag.pre
+---@type lc.ui.Tag.li|fun(): lc.ui.Tag.li
 local LeetTagUl = Li
 
 return LeetTagUl

@@ -4,6 +4,7 @@ local Line = require("leetcode-ui.line")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Tag.sup : lc.ui.Tag
+---@field super lc.ui.Tag
 local Sup = Tag:extend("LeetTagSup")
 
 local superscript = {
@@ -57,7 +58,7 @@ function Sup:parse_node()
     Sup.super.parse_node(self)
 end
 
----@type fun(): lc.ui.Tag.sup
+---@type lc.ui.Tag.sup|fun(): lc.ui.Tag.sup
 local LeetTagSup = Sup
 
 return LeetTagSup

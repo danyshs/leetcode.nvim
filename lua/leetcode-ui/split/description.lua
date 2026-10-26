@@ -8,7 +8,8 @@ local utils = require("leetcode.utils")
 local log = require("leetcode.logger")
 local t = require("leetcode.translator")
 
----@class lc.ui.Description : lc_ui.Split
+---@class lc.ui.Description : lc-ui.Split
+---@field super lc-ui.Split
 ---@field question lc.ui.Question
 ---@field urls     string[]         -- list of image URLs
 ---@field images   table<string,Image>
@@ -36,6 +37,7 @@ function Description.parse_image_urls(raw)
     return rewritten, urls
 end
 
+---@param parent lc.ui.Question
 function Description:init(parent)
     Description.super.init(self, {
         relative = "editor",

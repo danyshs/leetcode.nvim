@@ -1,6 +1,7 @@
 local Group = require("leetcode-ui.group")
 
 ---@class lc.ui.Buttons.Menu : lc.ui.Group
+---@field super lc.ui.Group
 local MenuButtons = Group:extend("LeetMenuButtons")
 
 function MenuButtons:init(buttons, opts)
@@ -14,7 +15,7 @@ function MenuButtons:init(buttons, opts)
     MenuButtons.super.init(self, buttons or {}, opts)
 end
 
----@type fun(buttons?: lc.ui.Button[], opts?: table): lc.ui.Buttons.Menu
+---@type lc.ui.Buttons.Menu|fun(buttons?: lc.ui.Button[], opts?: table): lc.ui.Buttons.Menu
 local LeetMenuButtons = MenuButtons
 
 return LeetMenuButtons

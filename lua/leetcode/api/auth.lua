@@ -7,7 +7,9 @@ local urls = require("leetcode.api.urls")
 ---@class lc.AuthApi
 local Auth = {}
 
----@return lc.UserStatus, lc.err
+---@param cb? fun(user?: lc.UserStatus, err?: lc.err)
+---@return lc.UserStatus? user  # nil when cb is given (result goes to cb) or auth fails
+---@return lc.err? err
 function Auth.user(cb)
     local query = queries.auth
 
@@ -26,7 +28,8 @@ function Auth.user(cb)
 end
 
 ---@private
----@return lc.UserStatus, lc.err
+---@return lc.UserStatus? user  # nil when auth fails; this is how "not signed in" propagates
+---@return lc.err? err           # nil on success
 function Auth.handle(res, err)
     if err then
         return res, err
@@ -49,7 +52,7 @@ function Auth.handle(res, err)
     end
 
     config.auth = log.debug(auth)
-    return auth
+    return auth, nil
 end
 
 return Auth

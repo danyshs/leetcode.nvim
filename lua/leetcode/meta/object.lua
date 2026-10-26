@@ -1,0 +1,26 @@
+---@meta
+--- Static type surface for `nui.object` (a middleclass clone).
+---
+--- nui.object's `require("nui.object")` is typed as `fun(name): table`, so
+--- every class built on it (`Object("X")`, `Parent:extend("Y")`) loses the
+--- `extend` / `super` / `new` / `static` members at the type level, producing
+--- hundreds of false `undefined-field` and class-alias `assign-type-mismatch`
+--- diagnostics. Anchoring each class-hierarchy root to `lc.Object` restores
+--- those members for the whole tree via inheritance.
+---
+--- This is a type-only declaration (`---@meta`); it emits no runtime code.
+
+---@class lc.Object
+---@field super lc.Object            # parent class, used as `Foo.super.init(self, ...)`
+---@field static table               # static-method namespace
+---@field class lc.Object            # the class of an instance
+---@field name string
+---@field new fun(...): lc.Object
+---@field extend fun(self: lc.Object, name: string): lc.Object
+---@field init fun(self: lc.Object, ...): nil
+
+---@class NuiLine : lc.Object
+---@class NuiText : lc.Object
+---@class NuiPopup : lc.Object
+---@class NuiSplit : lc.Object
+---@class NuiLayout : lc.Object

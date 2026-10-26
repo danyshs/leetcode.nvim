@@ -8,7 +8,10 @@ local L = {}
 L.width = 80
 L.height = 15
 
----@param snippet lc.QuestionCodeSnippet
+---@class lc.picker.language.Snippet : lc.QuestionCodeSnippet
+---@field t lc.language  # attached by L.items
+
+---@param snippet lc.picker.language.Snippet
 local function dislay_icon(snippet)
     local hl = "leetcode_lang_" .. snippet.t.slug
     vim.api.nvim_set_hl(0, hl, { fg = snippet.t.color })
@@ -28,7 +31,7 @@ function L.entry(item)
     }
 end
 
----@param item lc.QuestionCodeSnippet
+---@param item lc.picker.language.Snippet
 function L.ordinal(item)
     return ("%s %s"):format(item.t.lang, item.t.slug)
 end

@@ -37,7 +37,7 @@ function A:contents()
     end
 end
 
----@type fun(): lc.ui.Tag.pre
+---@type lc.ui.Tag.a|fun(): lc.ui.Tag.a
 local LeetTagA = A
 
 return LeetTagA

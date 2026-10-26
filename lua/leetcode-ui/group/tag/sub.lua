@@ -3,6 +3,7 @@ local Tag = require("leetcode-ui.group.tag")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Tag.sub : lc.ui.Tag
+---@field super lc.ui.Tag
 local Sub = Tag:extend("LeetTagSub")
 
 local subscript = {
@@ -56,7 +57,7 @@ function Sub:parse_node()
     Sub.super.parse_node(self)
 end
 
----@type fun(): lc.ui.Tag.sub
+---@type lc.ui.Tag.sub|fun(): lc.ui.Tag.sub
 local LeetTagSub = Sub
 
 return LeetTagSub

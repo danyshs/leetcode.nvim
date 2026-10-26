@@ -5,6 +5,7 @@ local utils = require("leetcode-ui.utils")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Line : NuiLine
+---@field super NuiLine
 local Line = NuiLine:extend("LeetLine")
 
 function Line:contents()
@@ -56,6 +57,8 @@ function Line:replace(texts)
     return self
 end
 
+---@param content string|NuiText|NuiLine
+---@param highlight? string|nui_text_extmark
 function Line:append(content, highlight)
     Line.super.append(self, content, highlight or self._.opts.hl)
 
@@ -76,7 +79,7 @@ function Line:init(texts, opts) --
     Line.super.init(self, texts)
 end
 
----@type fun(texts?: NuiText[], opts?: lc.ui.opts): lc.ui.Line
+---@type lc.ui.Line|fun(texts?: NuiText[], opts?: lc.ui.opts): lc.ui.Line
 local LeetLine = Line
 
 return LeetLine

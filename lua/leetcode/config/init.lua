@@ -55,7 +55,9 @@ function config.setup()
         config.user.storage.home = config.user.directory
     end
 
-    config.user.storage = vim.tbl_map(vim.fn.expand, config.user.storage)
+    config.user.storage = vim.tbl_map(function(path)
+        return vim.fn.expand(path)
+    end, config.user.storage)
 
     config.debug = config.user.debug or false
     config.lang = config.user.lang

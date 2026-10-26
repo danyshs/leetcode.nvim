@@ -10,12 +10,16 @@ local NuiText = require("nui.text")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Calendar : lc.ui.Lines
+---@field super lc.ui.Lines
 ---@field curr_time integer
 ---@field calendar lc.Stats.CalendarData
 ---@field calendar_lines NuiLine[]
 ---@field last_year_sub_count integer
 local Calendar = Lines:extend("LeetCalendar")
 
+---@param month integer
+---@param year integer
+---@return integer
 local function get_days_in_month(month, year)
     local days_in_month = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
     if (year % 4 == 0 and year % 100 ~= 0) or (year % 400 == 0) then
@@ -143,16 +147,16 @@ end
 
 ---@param m integer
 function Calendar:handle_weeks(m)
-    local curr = os.date("*t", self.curr_time)
+    local curr = os.date("*t", self.curr_time) --[[@as osdate]]
     for i = 1, curr.wday - 1 do
         self.calendar_lines[i]:append(" ")
     end
 
     for _ = curr.day, get_days_in_month(curr.month, curr.year) do
-        self:handle_weekdays(m)
+        self:handle_weekdays()
     end
 
-    curr = os.date("*t", self.curr_time)
+    curr = os.date("*t", self.curr_time) --[[@as osdate]]
     for i = curr.wday, 7 do
         self.calendar_lines[i]:append(" ")
     end
@@ -169,7 +173,7 @@ function Calendar:handle_weekdays()
         return
     end
 
-    local curr = os.date("*t", self.curr_time)
+    local curr = os.date("*t", self.curr_time) --[[@as osdate]]
     local count = self:get_submission(curr) or 0
 
     local text = NuiText("󰝤", square_hl(count, self.max_sub_count))
@@ -211,7 +215,7 @@ function Calendar:init()
     self:fetch()
 end
 
----@type fun(): lc.ui.Calendar
+---@type lc.ui.Calendar|fun(): lc.ui.Calendar
 local LeetCalendar = Calendar
 
 return LeetCalendar

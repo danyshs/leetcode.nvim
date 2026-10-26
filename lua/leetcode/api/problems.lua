@@ -10,7 +10,8 @@ local Problems = {}
 ---@param cb? function
 ---@param noti? boolean
 ---
----@return lc.cache.Question[], lc.err
+---@return lc.cache.Question[]? problems  # nil when cb is given (result goes to cb) or on error
+---@return lc.err? err
 function Problems.all(cb, noti)
     local endpoint = urls.problems:format("algorithms")
 
@@ -78,6 +79,7 @@ function Problems.all(cb, noti)
                 end
                 return nil, terr
             end
+            assert(titles, "translated_titles returned neither titles nor an error")
 
             if spinner then
                 spinner:success("problems cache updated")

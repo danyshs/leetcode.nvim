@@ -41,6 +41,7 @@
 ---@alias lc.picker { provider?: "fzf-lua" | "telescope" | "snacks-picker" }
 
 ---@class lc.UserConfig
+---@field directory? string # deprecated: use `storage.home` instead
 local M = {
     ---@type string
     arg = "leetcode.nvim",

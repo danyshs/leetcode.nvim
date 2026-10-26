@@ -6,6 +6,7 @@ local keys = config.user.keys
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Popup : NuiPopup
+---@field super NuiPopup
 ---@field visible boolean
 ---@field renderer lc.ui.Renderer
 local Popup = NuiPopup:extend("LeetPopup")
@@ -25,8 +26,8 @@ function Popup:_buf_create()
     self:update_renderer()
 end
 
-function Popup:_buf_destory()
-    Popup.super._buf_destory(self)
+function Popup:_buf_destroy()
+    Popup.super._buf_destroy(self)
     self:update_renderer()
 end
 
@@ -127,7 +128,7 @@ function Popup:init(opts)
     Popup.super.init(self, options)
 end
 
----@type fun(opts: table): lc.ui.Popup
+---@type lc.ui.Popup|fun(opts: table): lc.ui.Popup
 local LeetPopup = Popup
 
 return LeetPopup

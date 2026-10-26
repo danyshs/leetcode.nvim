@@ -11,7 +11,7 @@ local log = require("leetcode.logger")
 
 ---@alias lc.editor.section "imports" | "code"
 
----@class lc.ui.Question
+---@class lc.ui.Question : lc.Object
 ---@field file Path
 ---@field q lc.question_res
 ---@field description lc.ui.Description

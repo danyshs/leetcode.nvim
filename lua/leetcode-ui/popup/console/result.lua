@@ -7,6 +7,7 @@ local log = require("leetcode.logger")
 local config = require("leetcode.config")
 
 ---@class lc.ui.Console.ResultPopup : lc.ui.Console.Popup
+---@field super lc.ui.Console.Popup
 ---@field renderer lc.ui.Result
 ---@field last_testcase string
 local ResultPopup = ConsolePopup:extend("LeetResultPopup")
@@ -65,7 +66,7 @@ function ResultPopup:init(parent)
     self.renderer = ResultLayout(parent)
 end
 
----@type fun(parent: lc.ui.Console): lc.ui.Console.ResultPopup
+---@type lc.ui.Console.ResultPopup|fun(parent: lc.ui.Console): lc.ui.Console.ResultPopup
 local LeetResultPopup = ResultPopup
 
 return LeetResultPopup

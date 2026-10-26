@@ -5,6 +5,7 @@ local Case = require("leetcode-ui.group.case")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Cases : lc.ui.Group
+---@field super lc.ui.Group
 ---@field cases table<integer, lc.ui.Case>
 ---@field idx integer
 ---@field console lc.ui.Console
@@ -57,7 +58,6 @@ end
 
 ---@param item lc.runtime
 ---@param parent lc.ui.Console
----@return lc.ui.Cases
 function Cases:init(item, parent)
     Cases.super.init(self, {}, { spacing = 1 })
 
@@ -79,7 +79,7 @@ function Cases:init(item, parent)
     self:change(1)
 end
 
----@type fun(item: lc.runtime, parent: lc.ui.Console): lc.ui.Cases
+---@type lc.ui.Cases|fun(item: lc.runtime, parent: lc.ui.Console): lc.ui.Cases
 local LeetCases = Cases
 
 return LeetCases

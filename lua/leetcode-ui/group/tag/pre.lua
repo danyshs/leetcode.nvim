@@ -4,6 +4,7 @@ local config = require("leetcode.config")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Tag.pre : lc.ui.Tag
+---@field super lc.ui.Tag
 local Pre = Tag:extend("LeetTagPre")
 
 function Pre:contents()
@@ -16,7 +17,7 @@ function Pre:contents()
     return items
 end
 
----@type fun(): lc.ui.Tag.pre
+---@type lc.ui.Tag.pre|fun(): lc.ui.Tag.pre
 local LeetTagPre = Pre
 
 return LeetTagPre

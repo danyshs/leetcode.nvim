@@ -1,7 +1,9 @@
 local Tag = require("leetcode-ui.group.tag")
 
 ---@class lc.ui.Tag.List : lc.ui.Tag
+---@field super lc.ui.Tag
 ---@field indent integer
+---@field order? integer  # item counter; only ordered lists (ol) set it
 local List = Tag:extend("LeetTagList")
 
 function List:contents()
@@ -14,7 +16,7 @@ function List:contents()
     return items
 end
 
----@type fun(): lc.ui.Tag.List
+---@type lc.ui.Tag.List|fun(): lc.ui.Tag.List
 local LeetTagList = List
 
 return LeetTagList

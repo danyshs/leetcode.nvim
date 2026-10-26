@@ -5,6 +5,7 @@ local Line = require("leetcode-ui.line")
 local t = require("leetcode.translator")
 
 ---@class lc.ui.Input : lc.ui.Pre
+---@field super lc.ui.Pre
 local Input = Pre:extend("LeetSimilarQuestions")
 
 ---@param title string
@@ -27,7 +28,7 @@ function Input:init(title, input, params) --
     Input.super.init(self, title_line, group)
 end
 
----@type fun(title: string, input: string[], params: lc.QuestionResponse.metadata.param): lc.ui.Padding
+---@type lc.ui.Input|fun(title: string, input: string[], params: lc.QuestionResponse.metadata.param): lc.ui.Input
 local LeetInput = Input
 
 return LeetInput

@@ -10,11 +10,12 @@ local ui_utils = require("leetcode-ui.utils")
 local t = require("leetcode.translator")
 
 ---@class lc.ui.SimilarQuestions : lc.ui.Group
+---@field super lc.ui.Group
+---@field to_nodes fun(self: lc.ui.SimilarQuestions, questions: lc.QuestionResponse.similar): NuiTree.Node[]
 local SimilarQuestions = Group:extend("LeetSimilarQuestions")
 
 ---@param questions lc.QuestionResponse.similar
 ---
----@return lc.ui.Lines
 function SimilarQuestions:init(questions)
     SimilarQuestions.super.init(self)
 
@@ -53,7 +54,7 @@ function SimilarQuestions:init(questions)
     end
 end
 
----@type fun(questions: lc.QuestionResponse.similar): lc.ui.Padding
+---@type lc.ui.SimilarQuestions|fun(questions: lc.QuestionResponse.similar): lc.ui.SimilarQuestions
 local LeetSimilarQuestions = SimilarQuestions
 
 function SimilarQuestions.static:to_nodes(questions) --

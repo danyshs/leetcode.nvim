@@ -5,6 +5,7 @@ local config = require("leetcode.config")
 local stats = require("leetcode-ui.lines.stats")
 
 ---@class lc.ui.menu.Footer : lc.ui.Group
+---@field super lc.ui.Group
 local Footer = Group:extend("LeetFooter")
 
 function Footer:contents()
@@ -34,7 +35,7 @@ function Footer:init(opts)
     Footer.super.init(self, {}, opts)
 end
 
----@type fun(): lc.ui.menu.Footer
+---@type lc.ui.menu.Footer|fun(): lc.ui.menu.Footer
 local LeetFooter = Footer
 
 return LeetFooter()

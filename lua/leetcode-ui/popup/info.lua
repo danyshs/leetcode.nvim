@@ -10,6 +10,7 @@ local config = require("leetcode.config")
 local keys = config.user.keys
 
 ---@class lc.ui.InfoPopup : lc.ui.Popup
+---@field super lc.ui.Popup
 ---@field popup NuiPopup
 ---@field question lc.ui.Question
 ---@field hints table[]
@@ -177,7 +178,7 @@ function Info:init(parent)
     self.question = parent
 end
 
----@type fun(parent: lc.ui.Question): lc.ui.InfoPopup
+---@type lc.ui.InfoPopup|fun(parent: lc.ui.Question): lc.ui.InfoPopup
 local LeetInfoPopup = Info
 
 return LeetInfoPopup

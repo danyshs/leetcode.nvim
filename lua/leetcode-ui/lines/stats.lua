@@ -5,6 +5,7 @@ local cmd = require("leetcode.command")
 local config = require("leetcode.config")
 
 ---@class lc.ui.menu.Stats : lc.ui.Lines
+---@field super lc.ui.Lines
 local Stats = Lines:extend("LeetMenuTitle")
 
 function Stats:contents()
@@ -40,7 +41,7 @@ function Stats:contents()
     return Stats.super.contents(self)
 end
 
----@type fun(): lc.ui.menu.Stats
+---@type lc.ui.menu.Stats|fun(): lc.ui.menu.Stats
 local LeetMenuStats = Stats
 
 return LeetMenuStats()

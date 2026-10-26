@@ -69,7 +69,7 @@ function leetcode.should_skip(on_vimenter)
             end)
 
             return false, true
-        elseif #listed_bufs >= 1 then
+        else -- one or more buffers, not the single-empty-buffer case above
             if config.plugins.non_standalone then
                 return false, false
             else

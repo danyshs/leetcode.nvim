@@ -4,6 +4,8 @@ local Line = require("leetcode-ui.line")
 local u = require("leetcode.parser.utils")
 
 ---@class lc.Parser.Plain : lc.ui.Group
+---@field super lc.ui.Group
+---@field parse fun(self: lc.Parser.Plain, text: string): lc.Parser.Plain
 ---@field text string
 local Plain = Group:extend("LeetParserPlain")
 
@@ -22,7 +24,7 @@ function Plain:init(text)
     end
 end
 
----@type fun(text: string)
+---@type lc.Parser.Plain|fun(text: string): lc.Parser.Plain
 local LeetParserPlain = Plain
 
 ---@param text string

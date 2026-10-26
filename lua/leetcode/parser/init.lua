@@ -4,7 +4,8 @@ local Tag = require("leetcode-ui.group.tag")
 local Plain = require("leetcode.parser.plain")
 local log = require("leetcode.logger")
 
----@class lc.Parser
+---@class lc.Parser : lc.Object
+---@field parse fun(self: lc.Parser, text: string): lc.ui.Group
 local Parser = Object("LeetParser")
 
 ---@param text string
@@ -17,7 +18,7 @@ function Parser.static:parse(text)
     end
 end
 
----@type fun(): lc.Parser
+---@type lc.Parser|fun(): lc.Parser
 local LeetParser = Parser
 
 return LeetParser

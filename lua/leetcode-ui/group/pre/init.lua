@@ -5,6 +5,7 @@ local config = require("leetcode.config")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Pre : lc.ui.Group
+---@field super lc.ui.Group
 local Pre = Group:extend("LeetPre")
 
 function Pre:add_margin(item)
@@ -19,7 +20,7 @@ function Pre:add_margin(item)
 end
 
 ---@param title? lc.ui.Line
----@param item lc.ui.Lines
+---@param item? lc.ui.Line
 function Pre:init(title, item)
     Pre.super.init(self, {}, { spacing = 1, position = "left" })
 
@@ -33,8 +34,8 @@ function Pre:init(title, item)
     end
 end
 
----@alias Pre.constructor fun(title: lc.ui.Line, lines: any): lc.ui.Pre
----@type Pre.constructor
+---@alias Pre.constructor fun(title?: lc.ui.Line, item?: lc.ui.Line): lc.ui.Pre
+---@type lc.ui.Pre|Pre.constructor
 local LeetPre = Pre
 
 return LeetPre

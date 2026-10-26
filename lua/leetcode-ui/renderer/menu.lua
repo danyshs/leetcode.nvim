@@ -7,6 +7,7 @@ local Renderer = require("leetcode-ui.renderer")
 local api = vim.api
 
 ---@class lc.ui.Menu : lc.ui.Renderer
+---@field super lc.ui.Renderer
 ---@field cursor lc-menu.cursor
 ---@field maps table
 local Menu = Renderer:extend("LeetMenu")
@@ -230,7 +231,7 @@ function Menu:init()
     _Lc_state.menu = self
 end
 
----@type fun(): lc.ui.Menu
+---@type lc.ui.Menu|fun(): lc.ui.Menu
 local LeetMenu = Menu
 
 return LeetMenu

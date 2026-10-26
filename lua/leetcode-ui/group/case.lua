@@ -12,6 +12,7 @@ local log = require("leetcode.logger")
 ---@alias case_body { input: string[], raw_input: string, output: string, expected: string, std_output: string }
 
 ---@class lc.ui.Case : lc.ui.Group
+---@field super lc.ui.Group
 ---@field pre lc.ui.Lines
 ---@field stdout lc.ui.Lines
 ---@field passed boolean
@@ -54,7 +55,6 @@ end
 ---@param body case_body
 ---@param passed boolean
 ---
----@return lc.ui.Case
 function Case:init(body, passed, question)
     Case.super.init(self, {}, { spacing = 1 })
 
@@ -72,7 +72,7 @@ function Case:init(body, passed, question)
 end
 
 ---@alias lc.Result.Case.constructor fun(body: case_body, passed: boolean, question: lc.ui.Question): lc.ui.Case
----@type lc.Result.Case.constructor
+---@type lc.ui.Case|lc.Result.Case.constructor
 local LeetCase = Case
 
 return LeetCase

@@ -10,6 +10,7 @@ local Runner = require("leetcode.runner")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Console : lc.ui.Layout
+---@field super lc.ui.Layout
 ---@field question lc.ui.Question
 ---@field testcase lc.ui.Console.TestcasePopup
 ---@field result lc.ui.Console.ResultPopup
@@ -112,7 +113,7 @@ function ConsoleLayout:init(parent)
     )
 end
 
----@type fun(parent: lc.ui.Question): lc.ui.Console
+---@type lc.ui.Console|fun(parent: lc.ui.Question): lc.ui.Console
 local LeetConsoleLayout = ConsoleLayout
 
 return LeetConsoleLayout

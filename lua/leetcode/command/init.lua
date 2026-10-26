@@ -65,7 +65,7 @@ function cmd.problems(options)
     picker.question(p, options)
 end
 
----@param cb? function
+---@param cb? fun(success: boolean)
 function cmd.cookie_prompt(cb)
     local cookie = require("leetcode.cache.cookie")
 
@@ -101,7 +101,9 @@ function cmd.cookie_prompt(cb)
                 log.error("Sign-in failed: " .. err)
             end
 
-            pcall(cb, not err and true or false)
+            if cb then
+                pcall(cb, not err and true or false)
+            end
         end,
     })
 
@@ -197,6 +199,7 @@ function cmd.random_question(opts)
     if err then
         return log.err(err)
     end
+    assert(q, "question.random returned neither a question nor an error")
 
     local item = problems.get_by_title_slug(q.title_slug) or {}
     local Question = require("leetcode-ui.question")

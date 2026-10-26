@@ -2,9 +2,9 @@ local MenuButton = require("leetcode-ui.lines.button.menu")
 local leetcode = require("leetcode")
 
 ---@class lc.ui.Button.Menu.Exit : lc.ui.Button.Menu
+---@field super lc.ui.Button.Menu
 local MenuExitButton = MenuButton:extend("LeetMenuExitButton")
 
----@param page lc-menu.page
 function MenuExitButton:init()
     MenuExitButton.super.init(self, "Exit", {
         icon = "󰩈",
@@ -13,7 +13,7 @@ function MenuExitButton:init()
     })
 end
 
----@type fun(): lc.ui.Button.Menu.Back
+---@type lc.ui.Button.Menu.Exit|fun(): lc.ui.Button.Menu.Exit
 local LeetMenuExitButton = MenuExitButton
 
 return LeetMenuExitButton

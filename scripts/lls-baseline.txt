@@ -1,0 +1,4 @@
+lua/leetcode-ui/popup/init.lua	invisible	Field `_` is private, it can only be accessed in class `NuiPopup`.
+lua/leetcode-ui/split/init.lua	invisible	Field `_` is private, it can only be accessed in class `NuiSplit`.
+lua/leetcode/command/init.lua	missing-fields	Missing required fields in type `lc.UserStatus`: `name`, `is_signed_in`, `is_premium`, `is_verified`, `id`, `session_id`
+lua/leetcode/picker/language/init.lua	missing-return-value	Annotations specify that at least 1 return value(s) are required, found 0 returned here instead.

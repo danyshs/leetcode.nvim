@@ -2,6 +2,7 @@ local Lines = require("leetcode-ui.lines")
 local t = require("leetcode.translator")
 
 ---@class lc.ui.menu.Title : lc.ui.Lines
+---@field super lc.ui.Lines
 ---@field text lc.ui.Lines
 local Title = Lines:extend("LeetMenuTitle")
 
@@ -27,7 +28,7 @@ function Title:init(history, str, opts)
     self:append(str, "Function")
 end
 
----@type fun(history: string[], str: string, opts?: any): lc.ui.menu.Title
+---@type lc.ui.menu.Title|fun(history: string[], str: string, opts?: any): lc.ui.menu.Title
 local LeetMenuTitle = Title
 
 return LeetMenuTitle

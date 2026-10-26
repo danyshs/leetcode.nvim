@@ -4,6 +4,7 @@ local t = require("leetcode.translator")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Button.Menu : lc.ui.Button
+---@field super lc.ui.Button
 local MenuButton = Button:extend("LeetMenuButton")
 
 ---@alias lc.ui.Button.Menu.opts
@@ -38,7 +39,7 @@ function MenuButton:init(text, opts)
     end
 end
 
----@type fun(text: string, opts: lc.ui.Button.Menu.opts): lc.ui.Button
+---@type lc.ui.Button.Menu|fun(text: string, opts: lc.ui.Button.Menu.opts): lc.ui.Button.Menu
 local LeetMenuButton = MenuButton
 
 return LeetMenuButton

@@ -8,6 +8,7 @@ local t = require("leetcode.translator")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Solved : lc.ui.Lines
+---@field super lc.ui.Lines
 local Solved = Lines:extend("LeetSolved")
 
 ---@return NuiLine
@@ -111,7 +112,7 @@ function Solved:init()
     self:fetch()
 end
 
----@type fun(): lc.ui.Solved
+---@type lc.ui.Solved|fun(): lc.ui.Solved
 local LeetSolved = Solved
 
 return LeetSolved

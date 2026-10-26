@@ -30,7 +30,7 @@ statistics.solved = function(cb)
     })
 end
 
----@param cb fun(res: lc.Stats.QuestionCount[], err: lc.err)
+---@param cb fun(res?: lc.Stats.QuestionCount[], err?: lc.err)
 statistics.session_progress = function(cb)
     local variables = {
         userSlug = config.auth.name,

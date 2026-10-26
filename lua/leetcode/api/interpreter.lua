@@ -94,8 +94,6 @@ end
 
 ---@param id string
 ---@param cb function
----
----@return lc.Interpreter.Response
 function interpreter.check(id, cb)
     local url = urls.check:format(id)
     utils.get(url, { callback = cb })

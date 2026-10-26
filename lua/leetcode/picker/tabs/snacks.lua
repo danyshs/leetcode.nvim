@@ -24,14 +24,14 @@ return function(tabs)
         items = finder_items,
         format = function(item)
             local ret = {}
-            vim.tbl_map(function(col)
+            for _, col in ipairs(item.entry) do
                 if type(col) == "table" then
                     ret[#ret + 1] = col
                 else
                     ret[#ret + 1] = { col }
                 end
                 ret[#ret + 1] = { " " }
-            end, item.entry)
+            end
             return ret
         end,
         title = t("Select a Question"),

@@ -6,7 +6,13 @@ local ts = vim.treesitter
 local utils = require("leetcode.parser.utils")
 local log = require("leetcode.logger")
 
+---@class lc.Parser.Tag.Attr
+---@field name? string
+---@field value? string
+
 ---@class lc.ui.Tag : lc.ui.Group
+---@field super lc.ui.Group
+---@field parse fun(self: lc.ui.Tag, text: string): lc.ui.Group
 ---@field name string
 ---@field tags lc.ui.Tag[]
 ---@field node TSNode
@@ -81,6 +87,7 @@ end
 ---
 ---@return lc.Parser.Tag.Attr
 function Tag:get_attr(node)
+    ---@type lc.Parser.Tag.Attr
     local attr = {}
 
     for child in node:iter_children() do
@@ -232,7 +239,7 @@ function Tag:init(text, opts, node, tags) --
     self:parse_node()
 end
 
----@type fun(text: string, opts: lc.ui.opts, node: TSNode, tags: lc.ui.Tag[]): lc.ui.Tag
+---@type lc.ui.Tag|fun(text: string, opts: lc.ui.opts, node: TSNode, tags: lc.ui.Tag[]): lc.ui.Tag
 local LeetTag = Tag
 
 ---@param text string

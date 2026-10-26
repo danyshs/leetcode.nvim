@@ -2,6 +2,7 @@ local Lines = require("leetcode-ui.lines")
 local t = require("leetcode.translator")
 
 ---@class lc.ui.Header : lc.ui.Lines
+---@field super lc.ui.Lines
 local Header = Lines:extend("LeetHeader")
 
 local function testcases_passed(item)
@@ -29,7 +30,7 @@ function Header:init(item) --
     end
 end
 
----@type fun(item: lc.runtime): lc.ui.Header
+---@type lc.ui.Header|fun(item: lc.interpreter_response): lc.ui.Header
 local LeetHeader = Header
 
 return LeetHeader

@@ -6,6 +6,7 @@ local keys = config.user.keys
 local log = require("leetcode.logger")
 
 ---@class lc-ui.Split : NuiSplit
+---@field super NuiSplit
 ---@field renderer lc.ui.Renderer
 ---@field visible boolean
 local Split = NuiSplit:extend("LeetSplit")
@@ -25,8 +26,8 @@ function Split:_buf_create()
     self:update_renderer()
 end
 
-function Split:_buf_destory()
-    Split.super._buf_destory(self)
+function Split:_buf_destroy()
+    Split.super._buf_destroy(self)
     self:update_renderer()
 end
 
@@ -103,7 +104,7 @@ function Split:init(opts) --
     Split.super.init(self, options)
 end
 
----@type fun(opts?: nui_split_options): lc-ui.Split
+---@type lc-ui.Split|fun(opts?: nui_split_options): lc-ui.Split
 local LeetSplit = Split
 
 return LeetSplit

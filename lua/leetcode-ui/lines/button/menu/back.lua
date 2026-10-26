@@ -2,6 +2,7 @@ local MenuButton = require("leetcode-ui.lines.button.menu")
 local cmd = require("leetcode.command")
 
 ---@class lc.ui.Button.Menu.Back : lc.ui.Button.Menu
+---@field super lc.ui.Button.Menu
 local MenuBackButton = MenuButton:extend("LeetMenuBackButton")
 
 ---@param page lc-menu.page
@@ -15,7 +16,7 @@ function MenuBackButton:init(page)
     })
 end
 
----@type fun(page: lc-menu.page): lc.ui.Button.Menu.Back
+---@type lc.ui.Button.Menu.Back|fun(page: lc-menu.page): lc.ui.Button.Menu.Back
 local LeetMenuBackButton = MenuBackButton
 
 return LeetMenuBackButton

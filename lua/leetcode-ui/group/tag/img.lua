@@ -22,7 +22,7 @@ function Img:contents()
     return grp:contents()
 end
 
----@type fun(): lc.ui.Tag.pre
+---@type lc.ui.Tag.img|fun(): lc.ui.Tag.img
 local LeetTagImg = Img
 
 return LeetTagImg

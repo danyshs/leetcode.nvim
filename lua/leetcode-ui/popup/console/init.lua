@@ -2,6 +2,7 @@ local Popup = require("leetcode-ui.popup")
 local log = require("leetcode.logger")
 
 ---@class lc.ui.Console.Popup : lc.ui.Popup
+---@field super lc.ui.Popup
 ---@field console lc.ui.Console
 local ConsolePopup = Popup:extend("LeetConsolePopup")
 
@@ -15,13 +16,15 @@ ConsolePopup.handle_leave = vim.schedule_wrap(function(self)
     self.console:hide()
 end)
 
+---@param parent lc.ui.Console
+---@param opts nui_popup_options
 function ConsolePopup:init(parent, opts)
     ConsolePopup.super.init(self, opts)
 
     self.console = parent
 end
 
----@type fun(opts: table): lc.ui.Console.Popup
+---@type lc.ui.Console.Popup|fun(parent: lc.ui.Console, opts: nui_popup_options): lc.ui.Console.Popup
 local LeetConsolePopup = ConsolePopup
 
 return LeetConsolePopup

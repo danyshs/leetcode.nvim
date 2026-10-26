@@ -145,7 +145,7 @@ function utils.win_set_buf(winid, bufnr, force)
     local u = require("leetcode.utils")
 
     u.with_version("0.10.0", function()
-        local wfb = vim.api.nvim_win_get_option(winid, "winfixbuf")
+        local wfb = vim.api.nvim_get_option_value("winfixbuf", { win = winid })
 
         if not wfb then
             vim.api.nvim_win_set_buf(winid, bufnr)
