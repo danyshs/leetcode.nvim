@@ -7,6 +7,7 @@ local log = require("leetcode.logger")
 
 ---@class lc.ui.Popup : NuiPopup
 ---@field super NuiPopup
+---@field mounted boolean
 ---@field visible boolean
 ---@field renderer lc.ui.Renderer
 local Popup = NuiPopup:extend("LeetPopup")
@@ -42,7 +43,7 @@ function Popup:clear() --
 end
 
 function Popup:show()
-    if not self._.mounted then
+    if not self.mounted then
         self:mount()
     elseif not self.visible then
         Popup.super.show(self)
@@ -55,6 +56,7 @@ function Popup:unmount()
     self:clear()
     Popup.super.unmount(self)
 
+    self.mounted = false
     self.visible = false
 end
 
@@ -65,6 +67,7 @@ end
 function Popup:mount()
     Popup.super.mount(self)
 
+    self.mounted = true
     self.visible = true
 
     self:on({ "BufLeave", "WinLeave" }, function()

@@ -8,6 +8,7 @@ local log = require("leetcode.logger")
 ---@class lc-ui.Split : NuiSplit
 ---@field super NuiSplit
 ---@field renderer lc.ui.Renderer
+---@field mounted boolean
 ---@field visible boolean
 local Split = NuiSplit:extend("LeetSplit")
 
@@ -40,7 +41,7 @@ function Split:toggle()
 end
 
 function Split:show()
-    if not self._.mounted then
+    if not self.mounted then
         self:mount()
     elseif not self.visible then
         Split.super.show(self)
@@ -61,6 +62,7 @@ end
 function Split:mount()
     Split.super.mount(self)
 
+    self.mounted = true
     self.visible = true
 
     self:map("n", keys.toggle, function()
@@ -75,6 +77,7 @@ end
 function Split:unmount()
     Split.super.unmount(self)
 
+    self.mounted = false
     self.visible = false
 end
 
