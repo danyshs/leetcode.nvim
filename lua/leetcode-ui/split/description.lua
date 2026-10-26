@@ -5,6 +5,7 @@ local Padding = require("leetcode-ui.lines.padding")
 local Split = require("leetcode-ui.split")
 local Parser = require("leetcode.parser")
 local utils = require("leetcode.utils")
+local log = require("leetcode.logger")
 local t = require("leetcode.translator")
 
 ---@class lc.ui.Description : lc_ui.Split
@@ -14,10 +15,26 @@ local t = require("leetcode.translator")
 local Description = Split:extend("LeetDescription")
 local group_id = vim.api.nvim_create_augroup("leetcode_description", { clear = true })
 
--- Debug notifications (commented out; uncomment to re-enable)
--- local function D(msg)
---     vim.notify("LeetCodeImgDebug: " .. msg, vim.log.levels.DEBUG)
--- end
+---Rewrite each `<img src="URL">` in `raw` to a `\n(URL)` placeholder line and
+---collect the URLs in document order. Pure and buffer-free so the image-anchor
+---logic (which every image's placement depends on) is unit-testable without a
+---GUI terminal or a live question.
+---@param raw string the translated question HTML/markdown
+---@return string rewritten, string[] urls
+function Description.parse_image_urls(raw)
+    assert(type(raw) == "string", "parse_image_urls: raw must be a string")
+
+    local rewritten = raw:gsub("<img[^>]-src=[\"'](https?://[^\"']+)[\"'][^>]->", function(url)
+        return "\n(" .. url .. ")"
+    end)
+
+    local urls = {}
+    for url in rewritten:gmatch("%((https?://%S+)%)") do
+        table.insert(urls, url)
+    end
+
+    return rewritten, urls
+end
 
 function Description:init(parent)
     Description.super.init(self, {
@@ -32,12 +49,10 @@ function Description:init(parent)
     self.urls = {}
     self.images = {}
     Description._last = self
-    -- D("init() done")
 end
 
 function Description:mount()
     Description.super.mount(self)
-    -- D("mount() start")
     self:populate()
 
     local ui = require("leetcode-ui.utils")
@@ -54,12 +69,14 @@ function Description:mount()
     ui.win_set_winfixbuf(self.winid)
 
     if not ok and config.user.image_support then
-        vim.notify("image.nvim not found but image_support=true", vim.log.levels.ERROR)
+        log.error(
+            "leetcode: `image_support` is enabled but image.nvim failed to load: "
+                .. tostring(image_api)
+        )
     end
 
     self:draw()
     self:autocmds()
-    -- D("mount() done")
     return self
 end
 
@@ -74,22 +91,12 @@ function Description:autocmds()
 end
 
 function Description:populate()
-    -- D("populate() start")
     local q = self.question.q
     local raw = utils.translate(q.content, q.translated_content)
 
-    -- inject single leading-newline "(URL)" placeholder where each <img> appears
-    raw = raw:gsub("<img[^>]-src=[\"'](https?://[^\"']+)[\"'][^>]->", function(url)
-        return "\n(" .. url .. ")"
-    end)
-    -- D("raw after injection: " .. #raw .. " chars")
-
-    -- collect URLs from those placeholders
-    self.urls = {}
-    for url in raw:gmatch("%((https?://%S+)%)") do
-        table.insert(self.urls, url)
-        -- D("collected URL → " .. url)
-    end
+    -- rewrite <img> tags to (URL) placeholder lines and collect the URLs those
+    -- placeholders anchor the images to (see Description.parse_image_urls)
+    raw, self.urls = Description.parse_image_urls(raw)
 
     -- build header + stats
     local header = Group({}, { position = "center" })
@@ -139,7 +146,6 @@ function Description:populate()
     local contents = Parser:parse(raw)
     -- no extra Padding; placeholder sits exactly where needed
     self.renderer:replace({ header, contents })
-    -- D("renderer:replace() done")
 end
 
 function Description:draw()
@@ -148,39 +154,60 @@ function Description:draw()
 end
 
 function Description:draw_imgs()
-    -- D("draw_imgs() start – img_support=" .. tostring(ok and config.user.image_support))
     if not ok or not config.user.image_support then
-        -- D(" skipping images (support off)")
         return
     end
 
-    -- clear previously rendered images
-    for _, img in pairs(self.images) do
-        img:clear(true)
+    -- A redraw (resize/stats toggle) re-runs populate(), so the buffer and its
+    -- placeholder lines are rebuilt. image.nvim binds each image to an extmark
+    -- it follows (with_virtual_padding forces inline), but the extmarks are
+    -- cleared with the old buffer content, so we clear and re-place. We re-use
+    -- the already-fetched image object where we have it, and only hit the
+    -- network via from_url for URLs not yet fetched.
+    local bufnr, winid = self.bufnr, self.winid
+    if not (bufnr and vim.api.nvim_buf_is_valid(bufnr)) then
+        return
     end
-    self.images = {}
+    if not (winid and vim.api.nvim_win_is_valid(winid)) then
+        return
+    end
 
-    local lines = vim.api.nvim_buf_get_lines(self.bufnr, 0, -1, false)
-    for _, url in ipairs(self.urls) do
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+    ---Row (0-based extmark row) of the placeholder line holding `url`, or nil.
+    local function placeholder_row(url)
         for i, line in ipairs(lines) do
             if line:find(url, 1, true) then
+                return i - 1 -- ipairs is 1-based; extmark rows are 0-based
+            end
+        end
+        return nil
+    end
+
+    for _, url in ipairs(self.urls) do
+        local row = placeholder_row(url)
+        if row then
+            local cached = self.images[url]
+            if cached then
+                cached:render({ y = row })
+            else
                 image_api.from_url(url, {
-                    buffer = self.bufnr,
-                    window = self.winid,
+                    buffer = bufnr,
+                    window = winid,
                     with_virtual_padding = true,
                 }, function(fetched)
                     if not fetched then
-                        vim.notify(
-                            "LeetCodeImgDebug: fetch failed → " .. url,
-                            vim.log.levels.ERROR
-                        )
+                        log.error(("leetcode: failed to fetch description image: %s"):format(url))
+                        return
+                    end
+                    -- the split may have closed during the async fetch
+                    if not vim.api.nvim_buf_is_valid(bufnr) then
+                        fetched:clear(true)
                         return
                     end
                     self.images[url] = fetched
-                    fetched:render({ y = i })
-                    -- D("rendered image at line " .. i)
+                    fetched:render({ y = row })
                 end)
-                break
             end
         end
     end
@@ -188,7 +215,6 @@ end
 
 function Description:toggle_stats()
     self.show_stats = not self.show_stats
-    -- D("toggle_stats → show_stats=" .. tostring(self.show_stats))
     self:populate()
     self:draw()
 end

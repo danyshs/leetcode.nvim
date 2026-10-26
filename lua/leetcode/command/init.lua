@@ -334,7 +334,7 @@ function cmd.open()
             vim.ui.open(q.cache.link)
         else
             local command
-            local os_name = vim.loop.os_uname().sysname
+            local os_name = vim.uv.os_uname().sysname
 
             if os_name == "Linux" then
                 command = string.format("xdg-open '%s'", q.cache.link)
@@ -608,7 +608,7 @@ function cmd.exec(args)
     end
 
     if cmds and type(cmds[1]) == "function" then
-        cmds[1](options) ---@diagnostic disable-line
+        cmds[1](options)
     else
         log.error(("Invalid command: `%s %s`"):format(args.name, args.args))
     end
@@ -742,7 +742,7 @@ vim.api.nvim_create_user_command("LeetQ", function(opts)
         local interval_ms = 200
         local max_wait_ms = 7000
 
-        local timer = vim.loop.new_timer()
+        local timer = vim.uv.new_timer()
         if not timer then
             vim.cmd("Leet")
             return

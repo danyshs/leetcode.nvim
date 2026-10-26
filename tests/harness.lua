@@ -2,6 +2,12 @@
 -- Loads the plugin and its runtime deps against the REAL vim API (no mocks),
 -- and provides minimal assert helpers. Keep this dependency-light on purpose:
 -- a hard-forked plugin should test without luarocks/busted/nlua.
+--
+-- Run specs on the 0.13 nightly this config targets, NOT whatever `nvim` is on
+-- PATH (often older). From the repo root, e.g.:
+--   "$HOME/Library/Application Support/bob/nvim-bin/nvim" --headless -l tests/<spec>.lua
+-- A spec that assumes a 0.13 API will silently pass on an older PATH nvim, so
+-- always point at the nightly binary.
 
 local M = {}
 
