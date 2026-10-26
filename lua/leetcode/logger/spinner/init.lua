@@ -177,7 +177,7 @@ function Spinner:start(msg, spinner_type)
 
     self = setmetatable({
         index = 0,
-        timer = vim.loop.new_timer(),
+        timer = vim.uv.new_timer(),
         msg = msg,
         stype = spinner_type or "dot",
         lvl = lvls.INFO,
