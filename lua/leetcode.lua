@@ -6,7 +6,12 @@ local leetcode = {}
 ---@private
 local function log_failed_to_init()
     local log = require("leetcode.logger")
-    log.warn("Failed to initialize: `neovim` contains listed buffers")
+    log.warn(
+        "LeetCode could not open: this window already has other buffers, and the "
+            .. "default standalone mode needs an empty session. Fix: open it from an "
+            .. "empty buffer (`:enew` then `:Leet`), or set `plugins.non_standalone = "
+            .. "true` in the leetcode.nvim setup to let it open alongside your buffers."
+    )
 end
 
 local function log_buf_not_empty(bufname)
